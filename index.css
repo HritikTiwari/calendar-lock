@@ -1,0 +1,10 @@
+/* Base styles are provided by Tailwind CDN in index.html, 
+   but this file is required to prevent 404 errors in the console. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  padding: 0;
+}
