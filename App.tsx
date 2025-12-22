@@ -109,7 +109,7 @@ const App: React.FC = () => {
           </div>
           <div className="flex flex-col">
             <h1 className="font-black text-lg sm:text-xl leading-none tracking-tight text-gray-900 uppercase italic">Diary</h1>
-            <span className="text-[7px] sm:text-[9px] font-black text-yellow-600 tracking-[0.15em] sm:tracking-[0.2em] uppercase">Soft Block</span>
+            <span className="text-[7px] sm:text-[9px] font-black text-yellow-600 tracking-[0.15em] sm:tracking-[0.2em] uppercase">Calendar</span>
           </div>
         </div>
         
