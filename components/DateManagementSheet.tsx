@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
-/* Added ChevronRight to imports */
-import { X, Save, User, Phone, MapPin, ClipboardList, Trash2, Plus, ArrowLeft, ChevronRight } from 'lucide-react';
+import { X, Save, User, Phone, MapPin, ClipboardList, Trash2, Plus, ArrowLeft, ChevronRight, BellRing, Clock } from 'lucide-react';
 import { DayType, LocationType, EventBlock } from '../types';
 import { generateId } from '../utils';
 import { FullDayIcon, HalfDayMorningIcon, HalfDayEveningIcon } from './Icons';
@@ -30,6 +29,7 @@ const DateManagementSheet: React.FC<DateManagementSheetProps> = ({
   const [dayType, setDayType] = useState<DayType>(DayType.FULL_DAY);
   const [locationType, setLocationType] = useState<LocationType>(LocationType.LOCAL);
   const [notes, setNotes] = useState('');
+  const [customReminderDays, setCustomReminderDays] = useState<number | ''>('');
 
   const resetForm = () => {
     setName('');
@@ -37,6 +37,7 @@ const DateManagementSheet: React.FC<DateManagementSheetProps> = ({
     setDayType(DayType.FULL_DAY);
     setLocationType(LocationType.LOCAL);
     setNotes('');
+    setCustomReminderDays('');
     setEditingBlock(null);
   };
 
@@ -47,6 +48,7 @@ const DateManagementSheet: React.FC<DateManagementSheetProps> = ({
     setDayType(block.dayType);
     setLocationType(block.locationType);
     setNotes(block.notes);
+    setCustomReminderDays(block.customReminderDays || '');
     setView('FORM');
   };
 
@@ -67,6 +69,7 @@ const DateManagementSheet: React.FC<DateManagementSheetProps> = ({
       dayType,
       locationType,
       notes,
+      customReminderDays: customReminderDays === '' ? undefined : Number(customReminderDays),
       createdAt: editingBlock?.createdAt || Date.now()
     });
     
@@ -83,6 +86,15 @@ const DateManagementSheet: React.FC<DateManagementSheetProps> = ({
       onClose();
     } else {
       setView('LIST');
+    }
+  };
+
+  const getDayTypeLabel = (type: DayType) => {
+    switch (type) {
+      case DayType.FULL_DAY: return "Full Day (Day & Night)";
+      case DayType.HALF_DAY_MORNING: return "Half Day (Morning)";
+      case DayType.HALF_DAY_EVENING: return "Half Day (Evening)";
+      default: return "";
     }
   };
 
@@ -125,13 +137,13 @@ const DateManagementSheet: React.FC<DateManagementSheetProps> = ({
                   className="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex items-center gap-4 active:scale-[0.98] transition-all cursor-pointer hover:border-yellow-200"
                 >
                   <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-gray-100">
-                    {event.dayType === DayType.FULL_DAY && <FullDayIcon className="scale-150" />}
-                    {event.dayType === DayType.HALF_DAY_MORNING && <HalfDayMorningIcon className="scale-150" />}
-                    {event.dayType === DayType.HALF_DAY_EVENING && <HalfDayEveningIcon className="scale-150" />}
+                    {event.dayType === DayType.FULL_DAY && <FullDayIcon size={24} />}
+                    {event.dayType === DayType.HALF_DAY_MORNING && <HalfDayMorningIcon size={24} />}
+                    {event.dayType === DayType.HALF_DAY_EVENING && <HalfDayEveningIcon size={24} />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-black text-gray-900 truncate">{event.name}</p>
-                    <p className="text-[10px] text-gray-500 font-bold uppercase">{event.dayType.replace('_', ' ')} • {event.locationType}</p>
+                    <p className="text-[10px] text-gray-500 font-bold uppercase">{getDayTypeLabel(event.dayType)} • {event.locationType}</p>
                   </div>
                   <ChevronRight size={18} className="text-gray-300" />
                 </div>
@@ -157,28 +169,63 @@ const DateManagementSheet: React.FC<DateManagementSheetProps> = ({
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
-                  <Phone size={12} className="text-yellow-500" /> Mobile Number
-                </label>
-                <input
-                  type="tel" value={mobile} onChange={(e) => setMobile(e.target.value)}
-                  placeholder="Optional reference number"
-                  className="w-full px-5 py-4 rounded-2xl border border-gray-200 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-50 outline-none font-bold placeholder:text-gray-300"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                    <Phone size={12} className="text-yellow-500" /> Mobile Number
+                  </label>
+                  <input
+                    type="tel" value={mobile} onChange={(e) => setMobile(e.target.value)}
+                    placeholder="Optional reference"
+                    className="w-full px-5 py-4 rounded-2xl border border-gray-200 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-50 outline-none font-bold placeholder:text-gray-300 text-sm"
+                  />
+                </div>
+                
+                {/* 3rd Custom Reminder Section */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                    <Clock size={12} className="text-yellow-500" /> Custom Reminder
+                  </label>
+                  <input
+                    type="number" 
+                    value={customReminderDays} 
+                    onChange={(e) => setCustomReminderDays(e.target.value === '' ? '' : parseInt(e.target.value))}
+                    placeholder="Days before (e.g. 7)"
+                    min="1"
+                    className="w-full px-5 py-4 rounded-2xl border border-gray-200 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-50 outline-none font-bold placeholder:text-gray-300 text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="bg-yellow-50/50 p-4 rounded-2xl border border-yellow-100">
+                <p className="text-[10px] font-black text-yellow-700 uppercase tracking-widest mb-2 flex items-center gap-2">
+                  <BellRing size={12} /> Active Reminders
+                </p>
+                <ul className="text-[11px] font-bold text-gray-600 space-y-1">
+                  <li className="flex items-center gap-2">• 1 Day Before (Default)</li>
+                  <li className="flex items-center gap-2">• 3 Days Before (Default)</li>
+                  {customReminderDays && customReminderDays !== '' && (
+                    <li className="flex items-center gap-2 text-yellow-700 font-black">• {customReminderDays} Days Before (Custom)</li>
+                  )}
+                </ul>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Day Type</label>
-                <div className="grid grid-cols-3 gap-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Engagement Type</label>
+                <div className="grid grid-cols-1 gap-2">
                   {[DayType.FULL_DAY, DayType.HALF_DAY_MORNING, DayType.HALF_DAY_EVENING].map((type) => (
                     <button
                       key={type} type="button" onClick={() => setDayType(type)}
-                      className={`py-3 rounded-xl border text-[10px] font-black transition-all ${
+                      className={`flex items-center gap-4 px-5 py-4 rounded-2xl border text-xs font-black transition-all ${
                         dayType === type ? 'bg-black text-white border-black' : 'bg-white text-gray-500 border-gray-200'
                       }`}
                     >
-                      {type.replace('HALF_DAY_', '').replace('_', ' ')}
+                      <div className="w-8 h-8 flex items-center justify-center">
+                         {type === DayType.FULL_DAY && <FullDayIcon size={24} className={dayType === type ? 'text-white' : ''} />}
+                         {type === DayType.HALF_DAY_MORNING && <HalfDayMorningIcon size={24} className={dayType === type ? 'text-white' : ''} />}
+                         {type === DayType.HALF_DAY_EVENING && <HalfDayEveningIcon size={24} className={dayType === type ? 'text-white' : ''} />}
+                      </div>
+                      {getDayTypeLabel(type)}
                     </button>
                   ))}
                 </div>
@@ -209,7 +256,7 @@ const DateManagementSheet: React.FC<DateManagementSheetProps> = ({
                 <textarea
                   value={notes} onChange={(e) => setNotes(e.target.value)}
                   placeholder="e.g. Cinematic + Candid | 2 persons"
-                  rows={3}
+                  rows={2}
                   className="w-full px-5 py-4 rounded-2xl border border-gray-200 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-50 outline-none resize-none font-bold placeholder:text-gray-300"
                 />
               </div>

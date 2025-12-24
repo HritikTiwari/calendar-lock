@@ -19,12 +19,13 @@ export interface EventBlock {
   locationType: LocationType;
   notes: string;
   createdAt: number;
+  customReminderDays?: number; // 3rd reminder: X days before
 }
 
 export interface Reminder {
   id: string;
   eventId: string;
   message: string;
-  type: 'ONE_DAY_BEFORE' | 'DAY_OF';
+  type: 'ONE_DAY_BEFORE' | 'THREE_DAYS_BEFORE' | 'CUSTOM' | 'DAY_OF';
   date: string;
 }
