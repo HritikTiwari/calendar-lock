@@ -8,9 +8,7 @@ import {
   endOfWeek,
   addDays,
   isBefore,
-  isAfter,
-  startOfDay,
-  subDays
+  isAfter
 } from 'date-fns';
 import { 
   ChevronLeft, 
@@ -51,7 +49,6 @@ const App: React.FC = () => {
     } else {
       const today = new Date();
       const sampleData: EventBlock[] = [
-        // TODAY
         {
           id: generateId(),
           date: today.toISOString(),
@@ -61,10 +58,9 @@ const App: React.FC = () => {
           notes: "4 persons team",
           createdAt: Date.now()
         },
-        // PAST
         {
           id: generateId(),
-          date: subDays(today, 5).toISOString(),
+          date: addDays(today, -5).toISOString(),
           name: "Engagement: Amit & Sneha",
           dayType: DayType.HALF_DAY_EVENING,
           locationType: LocationType.LOCAL,
@@ -73,14 +69,13 @@ const App: React.FC = () => {
         },
         {
           id: generateId(),
-          date: subDays(today, 2).toISOString(),
+          date: addDays(today, -2).toISOString(),
           name: "Maternity Shoot: Dr. Kapoor",
           dayType: DayType.HALF_DAY_MORNING,
           locationType: LocationType.LOCAL,
           notes: "Studio session",
           createdAt: Date.now()
         },
-        // UPCOMING
         {
           id: generateId(),
           date: addDays(today, 2).toISOString(),
@@ -131,8 +126,10 @@ const App: React.FC = () => {
   };
 
   const filteredEvents = events.filter(e => {
-    const eDate = startOfDay(new Date(e.date));
-    const tDate = startOfDay(new Date());
+    const eDate = new Date(e.date);
+    eDate.setHours(0, 0, 0, 0);
+    const tDate = new Date();
+    tDate.setHours(0, 0, 0, 0);
     
     if (listFilter === 'PAST') return isBefore(eDate, tDate);
     if (listFilter === 'TODAY') return eDate.getTime() === tDate.getTime();
@@ -150,59 +147,43 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] flex flex-col pb-24 sm:pb-0 font-sans">
-      {/* Premium Header */}
-      <header className="bg-white border-b px-4 sm:px-5 py-3 sm:py-5 sticky top-0 z-30 flex items-center justify-between shadow-sm">
+    <div className="min-h-screen bg-[#F8F9FA] flex flex-col pb-24 font-sans">
+      {/* Refined Header */}
+      <header className="bg-white border-b px-3 sm:px-6 py-3 sm:py-5 sticky top-0 z-30 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="bg-yellow-400 text-black p-2 sm:p-2.5 rounded-xl sm:rounded-2xl shadow-md rotate-[-3deg]">
-            <CalendarIcon size={20} className="sm:w-6 sm:h-6" strokeWidth={3} />
+          <div className="bg-yellow-400 text-black p-1.5 sm:p-2.5 rounded-lg sm:rounded-2xl shadow-md rotate-[-3deg]">
+            <CalendarIcon size={18} className="sm:w-6 sm:h-6" strokeWidth={3} />
           </div>
           <div className="flex flex-col">
-            <h1 className="font-black text-lg sm:text-xl leading-none tracking-tight text-gray-900 uppercase italic">Diary</h1>
-            <span className="text-[7px] sm:text-[9px] font-black text-yellow-600 tracking-[0.15em] sm:tracking-[0.2em] uppercase">Soft Block</span>
+            <h1 className="font-black text-base sm:text-xl leading-none tracking-tight text-gray-900 uppercase italic">Diary</h1>
+            <span className="text-[6px] sm:text-[9px] font-black text-yellow-600 tracking-[0.1em] sm:tracking-[0.2em] uppercase">Soft Block</span>
           </div>
         </div>
         
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          {viewMode === 'CALENDAR' && (
-            <div className="flex items-center bg-gray-100 rounded-xl sm:rounded-2xl p-0.5 sm:p-1 shadow-inner mr-1">
-              <button onClick={() => setCurrentDate(addMonths(currentDate, -1))} className="p-1.5 sm:p-2 hover:bg-white rounded-lg sm:rounded-xl active:scale-90 transition-all"><ChevronLeft size={14} className="sm:w-4 sm:h-4" strokeWidth={3} /></button>
-              <span className="px-1 sm:px-3 font-black text-[10px] sm:text-sm min-w-[70px] sm:min-w-[110px] text-center text-gray-800 uppercase tracking-tighter">{format(currentDate, 'MMM yyyy')}</span>
-              <button onClick={() => setCurrentDate(addMonths(currentDate, 1))} className="p-1.5 sm:p-2 hover:bg-white rounded-lg sm:rounded-xl active:scale-90 transition-all"><ChevronRight size={14} className="sm:w-4 sm:h-4" strokeWidth={3} /></button>
-            </div>
-          )}
-          
-          <div className="flex items-center bg-gray-100 rounded-xl p-1 shadow-inner">
-            <button 
-              onClick={() => setViewMode('CALENDAR')}
-              className={`p-2 rounded-lg transition-all ${viewMode === 'CALENDAR' ? 'bg-white shadow-sm text-yellow-600' : 'text-gray-400 hover:text-gray-600'}`}
-            >
-              <LayoutGrid size={18} strokeWidth={3} />
-            </button>
-            <button 
-              onClick={() => setViewMode('LIST')}
-              className={`p-2 rounded-lg transition-all ${viewMode === 'LIST' ? 'bg-white shadow-sm text-yellow-600' : 'text-gray-400 hover:text-gray-600'}`}
-            >
-              <ListIcon size={18} strokeWidth={3} />
-            </button>
-          </div>
+        {/* Month Navigation remains in header for clarity */}
+        <div className="flex items-center bg-gray-100 rounded-lg sm:rounded-2xl p-0.5 sm:p-1 shadow-inner">
+          <button onClick={() => setCurrentDate(addMonths(currentDate, -1))} className="p-1 sm:p-2 hover:bg-white rounded-md sm:rounded-xl active:scale-90 transition-all"><ChevronLeft size={12} className="sm:w-4 sm:h-4" strokeWidth={3} /></button>
+          <span className="px-1 sm:px-3 font-black text-[9px] sm:text-sm min-w-[60px] sm:min-w-[110px] text-center text-gray-800 uppercase tracking-tighter">
+            {format(currentDate, 'MMM yy')}
+          </span>
+          <button onClick={() => setCurrentDate(addMonths(currentDate, 1))} className="p-1 sm:p-2 hover:bg-white rounded-md sm:rounded-xl active:scale-90 transition-all"><ChevronRight size={12} className="sm:w-4 sm:h-4" strokeWidth={3} /></button>
         </div>
       </header>
 
-      <main className="flex-1 p-2 sm:p-8 max-w-7xl mx-auto w-full">
+      <main className="flex-1 p-3 sm:p-8 max-w-7xl mx-auto w-full overflow-x-hidden flex flex-col">
         
-        {/* Sub-tabs for List View */}
+        {/* List View Tabs (Only in List Mode) */}
         {viewMode === 'LIST' && (
-          <div className="flex justify-center mb-8">
-            <div className="bg-white p-1.5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-1">
+          <div className="flex justify-center mb-6 sm:mb-10">
+            <div className="bg-white p-1 rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 flex items-center w-full sm:w-auto overflow-hidden">
               {['PAST', 'TODAY', 'UPCOMING'].map((filter) => (
                 <button
                   key={filter}
                   onClick={() => setListFilter(filter as ListFilter)}
-                  className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                  className={`flex-1 sm:flex-none px-3 sm:px-8 py-2 sm:py-3 rounded-lg sm:rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all ${
                     listFilter === filter 
                       ? 'bg-black text-white shadow-lg' 
-                      : 'text-gray-400 hover:bg-gray-50'
+                      : 'text-gray-400 hover:bg-gray-50 active:scale-95'
                   }`}
                 >
                   {filter}
@@ -214,15 +195,16 @@ const App: React.FC = () => {
 
         {viewMode === 'CALENDAR' ? (
           <>
-            {/* Weekday Labels */}
             <div className="grid grid-cols-7 mb-2 sm:mb-4">
-              {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((day, i) => (
-                <div key={i} className="text-center text-[8px] sm:text-[10px] font-black text-gray-300 tracking-[0.1em] sm:tracking-[0.25em]">{day}</div>
+              {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
+                <div key={i} className="text-center text-[8px] sm:text-[10px] font-black text-gray-300 tracking-[0.1em] sm:tracking-[0.25em]">
+                  <span className="hidden sm:inline">{['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][i]}</span>
+                  <span className="sm:hidden">{day}</span>
+                </div>
               ))}
             </div>
 
-            {/* Calendar Grid */}
-            <div className="grid grid-cols-7 gap-1 sm:gap-4">
+            <div className="grid grid-cols-7 gap-1 sm:gap-4 flex-1">
               {days.map((day, i) => {
                 const isOutsideMonth = format(day, 'MM') !== format(currentDate, 'MM');
                 const dayEvents = events.filter(e => format(new Date(e.date), 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd'));
@@ -243,31 +225,30 @@ const App: React.FC = () => {
                     key={i}
                     onClick={() => !isOutsideMonth && handleDateClick(day)}
                     className={`
-                      relative p-1.5 sm:p-4 rounded-xl sm:rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between group
-                      ${isOutsideMonth ? 'opacity-0 sm:opacity-5 bg-transparent border-transparent cursor-default pointer-events-none' : 'bg-white border-gray-50 shadow-sm hover:border-yellow-400 hover:shadow-lg sm:hover:shadow-xl sm:hover:-translate-y-1 active:scale-[0.97]'}
+                      relative p-1 sm:p-4 rounded-lg sm:rounded-2xl border transition-all cursor-pointer flex flex-col justify-between group
+                      ${isOutsideMonth ? 'opacity-0 bg-transparent border-transparent cursor-default pointer-events-none' : 'bg-white border-gray-50 shadow-sm hover:border-yellow-400 active:scale-[0.97]'}
                       ${isToday ? 'ring-2 ring-yellow-400 border-transparent bg-yellow-50/10' : ''}
-                      ${isTaller ? 'min-h-[75px] sm:min-h-[150px]' : 'min-h-[65px] sm:min-h-[120px]'}
+                      ${isTaller ? 'min-h-[70px] sm:min-h-[150px]' : 'min-h-[60px] sm:min-h-[120px]'}
                     `}
                   >
                     <div className="flex justify-between items-start">
-                      <span className={`text-[10px] sm:text-lg font-black ${isToday ? 'text-yellow-600' : isOutsideMonth ? 'text-transparent' : 'text-gray-400'}`}>
+                      <span className={`text-[10px] sm:text-lg font-black ${isToday ? 'text-yellow-600' : isOutsideMonth ? 'text-transparent' : 'text-gray-300'}`}>
                         {format(day, 'd')}
                       </span>
                     </div>
 
-                    {/* Per-type Indicator with +N */}
-                    <div className="flex flex-col gap-0.5 sm:gap-1.5 mt-auto pt-1">
+                    <div className="flex flex-col gap-0.5 sm:gap-1.5 mt-auto pt-1 overflow-hidden">
                       {Object.entries(typeCounts).map(([type, count]) => {
                         if (count === 0) return null;
                         return (
-                          <div key={type} className="flex items-center gap-0.5 sm:gap-1 bg-gray-50/50 sm:bg-transparent rounded-md px-1 py-0.5 sm:p-0">
-                            <div className="scale-75 sm:scale-100 origin-left">
+                          <div key={type} className="flex items-center gap-0.5 bg-gray-50/80 sm:bg-transparent rounded px-0.5 py-0.5 sm:p-0">
+                            <div className="scale-[0.6] sm:scale-100 origin-left">
                               {type === DayType.FULL_DAY && <FullDayIcon isPast={isPast} size={14} />}
                               {type === DayType.HALF_DAY_MORNING && <HalfDayMorningIcon isPast={isPast} size={14} />}
                               {type === DayType.HALF_DAY_EVENING && <HalfDayEveningIcon isPast={isPast} size={14} />}
                             </div>
                             {count > 1 && (
-                              <span className={`text-[7px] sm:text-[10px] font-black ${isPast ? 'text-gray-400' : 'text-yellow-600'}`}>
+                              <span className={`text-[6px] sm:text-[10px] font-black ${isPast ? 'text-gray-400' : 'text-yellow-600'}`}>
                                 +{count - 1}
                               </span>
                             )}
@@ -277,76 +258,121 @@ const App: React.FC = () => {
                     </div>
                     
                     {hasAnyEvents && !isOutsideMonth && (
-                       <div className={`absolute bottom-0 left-2 right-2 sm:left-4 sm:right-4 h-[2px] sm:h-[3px] rounded-full ${isPast ? 'bg-gray-200' : 'bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)]'}`}></div>
+                       <div className={`absolute bottom-0 left-1 right-1 sm:left-4 sm:right-4 h-[1.5px] sm:h-[3px] rounded-full ${isPast ? 'bg-gray-200' : 'bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)]'}`}></div>
                     )}
                   </div>
                 );
               })}
             </div>
-
-            {/* Legend */}
-            <div className="mt-8 sm:mt-12 flex flex-wrap items-center justify-center gap-3 sm:gap-12 p-4 sm:p-8 bg-white rounded-2xl sm:rounded-[2.5rem] border-2 border-gray-50 shadow-xl relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1 bg-yellow-400"></div>
-              <div className="flex items-center gap-2 sm:gap-3 font-black text-[8px] sm:text-[10px] text-gray-500 uppercase tracking-widest bg-gray-50 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl"><FullDayIcon size={14} /> Full Day (Day & Night)</div>
-              <div className="flex items-center gap-2 sm:gap-3 font-black text-[8px] sm:text-[10px] text-gray-500 uppercase tracking-widest bg-gray-50 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl"><HalfDayMorningIcon size={14} /> Half Day (Morning)</div>
-              <div className="flex items-center gap-2 sm:gap-3 font-black text-[8px] sm:text-[10px] text-gray-500 uppercase tracking-widest bg-gray-50 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl"><HalfDayEveningIcon size={14} /> Half Day (Evening)</div>
-            </div>
           </>
         ) : (
-          /* List View Content */
-          <div className="max-w-3xl mx-auto space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="max-w-3xl mx-auto space-y-3 sm:space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 w-full flex-1">
             {filteredEvents.length === 0 ? (
-              <div className="text-center py-20 bg-white rounded-[2rem] border-2 border-dashed border-gray-100">
-                <div className="bg-gray-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <Clock className="text-gray-300" size={32} />
+              <div className="text-center py-16 sm:py-24 bg-white rounded-2xl sm:rounded-[2rem] border-2 border-dashed border-gray-100 px-4">
+                <div className="bg-gray-50 w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Clock className="text-gray-300 w-6 h-6 sm:w-8 sm:h-8" />
                 </div>
-                <p className="font-black text-gray-400 uppercase tracking-widest text-sm">No Events Found</p>
-                <p className="text-gray-300 font-bold text-xs mt-1">Try switching tabs or add a new engagement</p>
+                <p className="font-black text-gray-400 uppercase tracking-widest text-[10px] sm:text-sm">No Events Found</p>
+                <p className="text-gray-300 font-bold text-[9px] sm:text-xs mt-1">Try switching tabs or add a new engagement</p>
               </div>
             ) : (
               filteredEvents.map((event) => (
                 <div 
                   key={event.id}
                   onClick={() => handleDateClick(new Date(event.date))}
-                  className="bg-white p-5 rounded-[2rem] border-2 border-gray-50 shadow-sm hover:shadow-xl hover:border-yellow-100 transition-all cursor-pointer group flex items-center gap-5"
+                  className="bg-white p-3 sm:p-5 rounded-2xl sm:rounded-[2rem] border sm:border-2 border-gray-50 shadow-sm hover:shadow-lg active:scale-[0.98] transition-all cursor-pointer group flex items-center gap-3 sm:gap-5"
                 >
-                  <div className="bg-gray-50 p-4 rounded-2xl shadow-inner border border-white group-hover:scale-110 transition-transform">
-                    {event.dayType === DayType.FULL_DAY && <FullDayIcon size={32} isPast={isDateInPast(new Date(event.date))} />}
-                    {event.dayType === DayType.HALF_DAY_MORNING && <HalfDayMorningIcon size={32} isPast={isDateInPast(new Date(event.date))} />}
-                    {event.dayType === DayType.HALF_DAY_EVENING && <HalfDayEveningIcon size={32} isPast={isDateInPast(new Date(event.date))} />}
+                  <div className="bg-gray-50 p-2 sm:p-4 rounded-lg sm:rounded-2xl shadow-inner border border-white shrink-0">
+                    <div className="scale-[0.8] sm:scale-100">
+                      {event.dayType === DayType.FULL_DAY && <FullDayIcon size={32} isPast={isDateInPast(new Date(event.date))} />}
+                      {event.dayType === DayType.HALF_DAY_MORNING && <HalfDayMorningIcon size={32} isPast={isDateInPast(new Date(event.date))} />}
+                      {event.dayType === DayType.HALF_DAY_EVENING && <HalfDayEveningIcon size={32} isPast={isDateInPast(new Date(event.date))} />}
+                    </div>
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-1">
-                      <span className="bg-yellow-100 text-yellow-700 text-[8px] font-black px-2 py-0.5 rounded-full uppercase">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-3 mb-0.5 sm:mb-1">
+                      <span className="bg-yellow-100 text-yellow-700 text-[7px] sm:text-[8px] font-black px-1.5 sm:px-2 py-0.5 rounded-full uppercase">
                         {format(new Date(event.date), 'EEE, MMM d')}
                       </span>
                       {event.locationType === LocationType.OUT_OF_CITY && (
-                        <span className="bg-indigo-50 text-indigo-500 text-[8px] font-black px-2 py-0.5 rounded-full uppercase flex items-center gap-1">
-                          <MapPin size={8} /> DESTINATION
+                        <span className="bg-indigo-50 text-indigo-500 text-[7px] sm:text-[8px] font-black px-1.5 sm:px-2 py-0.5 rounded-full uppercase flex items-center gap-1">
+                          <MapPin size={7} /> OUTSTATION
                         </span>
                       )}
                     </div>
-                    <h3 className="font-black text-lg text-gray-900 truncate tracking-tight">{event.name}</h3>
-                    <p className="text-gray-400 font-bold text-[10px] uppercase tracking-wider">{getDayTypeLabel(event.dayType)}</p>
+                    <h3 className="font-black text-sm sm:text-lg text-gray-900 truncate tracking-tight">{event.name}</h3>
+                    <p className="text-gray-400 font-bold text-[8px] sm:text-[10px] uppercase tracking-wider">{getDayTypeLabel(event.dayType)}</p>
                   </div>
 
-                  <div className="bg-gray-50 p-3 rounded-full group-hover:bg-yellow-400 group-hover:text-black text-gray-300 transition-all">
-                    <ChevronRightSmall size={20} strokeWidth={3} />
+                  <div className="bg-gray-50 p-2 sm:p-3 rounded-full text-gray-300 shrink-0">
+                    <ChevronRightSmall size={16} className="sm:w-5 sm:h-5" strokeWidth={3} />
                   </div>
                 </div>
               ))
             )}
           </div>
         )}
+
+        {/* --- MOVED BOTTOM NAVIGATION --- */}
+        <div className="mt-8 space-y-6">
+          {/* View Switcher: Calendar / List */}
+          <div className="flex justify-center">
+            <div className="flex items-center bg-gray-100 rounded-xl sm:rounded-2xl p-1 shadow-inner border border-gray-200">
+              <button 
+                onClick={() => setViewMode('CALENDAR')}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg sm:rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                  viewMode === 'CALENDAR' 
+                    ? 'bg-white shadow-md text-yellow-600 scale-100' 
+                    : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                <LayoutGrid size={16} strokeWidth={3} />
+                <span>Calendar</span>
+              </button>
+              <button 
+                onClick={() => setViewMode('LIST')}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg sm:rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                  viewMode === 'LIST' 
+                    ? 'bg-white shadow-md text-yellow-600 scale-100' 
+                    : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                <ListIcon size={16} strokeWidth={3} />
+                <span>List View</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Legend / Labels: Centered with unified colors */}
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 p-6 bg-white rounded-xl sm:rounded-[2.5rem] border-2 border-gray-50 shadow-md relative overflow-hidden max-w-4xl mx-auto w-full">
+            <div className="absolute top-0 left-0 w-full h-1 bg-yellow-400"></div>
+            
+            <div className="flex items-center gap-2.5 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
+              <FullDayIcon size={18} />
+              <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Full Day</span>
+            </div>
+            
+            <div className="flex items-center gap-2.5 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
+              <HalfDayMorningIcon size={18} />
+              <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Morning</span>
+            </div>
+            
+            <div className="flex items-center gap-2.5 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
+              <HalfDayEveningIcon size={18} />
+              <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Evening</span>
+            </div>
+          </div>
+        </div>
       </main>
 
       {/* Floating Action Button */}
       <button 
         onClick={() => handleDateClick(new Date())} 
-        className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 w-14 h-14 sm:w-16 sm:h-16 bg-black text-white rounded-2xl sm:rounded-[1.75rem] shadow-[0_15px_40px_rgba(0,0,0,0.3)] flex items-center justify-center hover:scale-110 active:scale-90 transition-all z-40 border-[3px] sm:border-[4px] border-white group"
+        className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 w-14 h-14 sm:w-16 sm:h-16 bg-black text-white rounded-2xl sm:rounded-[1.75rem] shadow-2xl flex items-center justify-center hover:scale-110 active:scale-90 transition-all z-40 border-4 border-white group"
+        aria-label="Add new engagement"
       >
-        <Plus strokeWidth={3} className="w-6 h-6 sm:w-8 sm:h-8 group-hover:rotate-180 transition-transform duration-500" />
+        <Plus strokeWidth={4} className="w-6 h-6 sm:w-8 sm:h-8 group-hover:rotate-90 transition-transform duration-300" />
       </button>
 
       {isSheetOpen && selectedDate && (
