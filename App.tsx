@@ -19,7 +19,9 @@ import {
   LayoutGrid,
   MapPin,
   Clock,
-  ChevronRight as ChevronRightSmall
+  ChevronRight as ChevronRightSmall,
+  X,
+  Info
 } from 'lucide-react';
 import { DayType, EventBlock, LocationType } from './types';
 import { isDateInPast, generateId } from './utils';
@@ -37,8 +39,13 @@ const App: React.FC = () => {
   const [events, setEvents] = useState<EventBlock[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [showLegend, setShowLegend] = useState(true);
 
   useEffect(() => {
+    // Check legend preference
+    const legendPref = localStorage.getItem('diary_legend_hidden');
+    if (legendPref === 'true') setShowLegend(false);
+
     const saved = localStorage.getItem('photographer_diary_events');
     if (saved && JSON.parse(saved).length > 0) {
       try {
@@ -112,6 +119,16 @@ const App: React.FC = () => {
     localStorage.setItem('photographer_diary_events', JSON.stringify(events));
   }, [events]);
 
+  const toggleLegend = () => {
+    const newState = !showLegend;
+    setShowLegend(newState);
+    if (!newState) {
+      localStorage.setItem('diary_legend_hidden', 'true');
+    } else {
+      localStorage.removeItem('diary_legend_hidden');
+    }
+  };
+
   const startOfCurrentMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
   const startOfGrid = addDays(startOfCurrentMonth, -startOfCurrentMonth.getDay());
 
@@ -160,7 +177,6 @@ const App: React.FC = () => {
           </div>
         </div>
         
-        {/* Month Navigation remains in header for clarity */}
         <div className="flex items-center bg-gray-100 rounded-lg sm:rounded-2xl p-0.5 sm:p-1 shadow-inner">
           <button onClick={() => setCurrentDate(addMonths(currentDate, -1))} className="p-1 sm:p-2 hover:bg-white rounded-md sm:rounded-xl active:scale-90 transition-all"><ChevronLeft size={12} className="sm:w-4 sm:h-4" strokeWidth={3} /></button>
           <span className="px-1 sm:px-3 font-black text-[9px] sm:text-sm min-w-[60px] sm:min-w-[110px] text-center text-gray-800 uppercase tracking-tighter">
@@ -172,7 +188,6 @@ const App: React.FC = () => {
 
       <main className="flex-1 p-3 sm:p-8 max-w-7xl mx-auto w-full overflow-x-hidden flex flex-col">
         
-        {/* List View Tabs (Only in List Mode) */}
         {viewMode === 'LIST' && (
           <div className="flex justify-center mb-6 sm:mb-10">
             <div className="bg-white p-1 rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 flex items-center w-full sm:w-auto overflow-hidden">
@@ -237,18 +252,19 @@ const App: React.FC = () => {
                       </span>
                     </div>
 
-                    <div className="flex flex-col gap-0.5 sm:gap-1.5 mt-auto pt-1 overflow-hidden">
+                    <div className="flex flex-col gap-1 sm:gap-2 mt-auto pt-1 overflow-hidden">
                       {Object.entries(typeCounts).map(([type, count]) => {
                         if (count === 0) return null;
                         return (
-                          <div key={type} className="flex items-center gap-0.5 bg-gray-50/80 sm:bg-transparent rounded px-0.5 py-0.5 sm:p-0">
-                            <div className="scale-[0.6] sm:scale-100 origin-left">
-                              {type === DayType.FULL_DAY && <FullDayIcon isPast={isPast} size={14} />}
-                              {type === DayType.HALF_DAY_MORNING && <HalfDayMorningIcon isPast={isPast} size={14} />}
-                              {type === DayType.HALF_DAY_EVENING && <HalfDayEveningIcon isPast={isPast} size={14} />}
+                          <div key={type} className="flex items-center gap-1 bg-gray-50/80 sm:bg-transparent rounded px-0.5 py-0.5 sm:p-0">
+                            {/* Bolder Icons in Grid - Increased from 14 to 20/24 */}
+                            <div className="scale-[0.7] sm:scale-100 origin-left">
+                              {type === DayType.FULL_DAY && <FullDayIcon isPast={isPast} size={22} />}
+                              {type === DayType.HALF_DAY_MORNING && <HalfDayMorningIcon isPast={isPast} size={22} />}
+                              {type === DayType.HALF_DAY_EVENING && <HalfDayEveningIcon isPast={isPast} size={22} />}
                             </div>
                             {count > 1 && (
-                              <span className={`text-[6px] sm:text-[10px] font-black ${isPast ? 'text-gray-400' : 'text-yellow-600'}`}>
+                              <span className={`text-[7px] sm:text-[11px] font-black ${isPast ? 'text-gray-400' : 'text-yellow-600'}`}>
                                 +{count - 1}
                               </span>
                             )}
@@ -283,10 +299,10 @@ const App: React.FC = () => {
                   className="bg-white p-3 sm:p-5 rounded-2xl sm:rounded-[2rem] border sm:border-2 border-gray-50 shadow-sm hover:shadow-lg active:scale-[0.98] transition-all cursor-pointer group flex items-center gap-3 sm:gap-5"
                 >
                   <div className="bg-gray-50 p-2 sm:p-4 rounded-lg sm:rounded-2xl shadow-inner border border-white shrink-0">
-                    <div className="scale-[0.8] sm:scale-100">
-                      {event.dayType === DayType.FULL_DAY && <FullDayIcon size={32} isPast={isDateInPast(new Date(event.date))} />}
-                      {event.dayType === DayType.HALF_DAY_MORNING && <HalfDayMorningIcon size={32} isPast={isDateInPast(new Date(event.date))} />}
-                      {event.dayType === DayType.HALF_DAY_EVENING && <HalfDayEveningIcon size={32} isPast={isDateInPast(new Date(event.date))} />}
+                    <div className="scale-[0.9] sm:scale-100">
+                      {event.dayType === DayType.FULL_DAY && <FullDayIcon size={36} isPast={isDateInPast(new Date(event.date))} />}
+                      {event.dayType === DayType.HALF_DAY_MORNING && <HalfDayMorningIcon size={36} isPast={isDateInPast(new Date(event.date))} />}
+                      {event.dayType === DayType.HALF_DAY_EVENING && <HalfDayEveningIcon size={36} isPast={isDateInPast(new Date(event.date))} />}
                     </div>
                   </div>
                   
@@ -314,9 +330,8 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* --- MOVED BOTTOM NAVIGATION --- */}
+        {/* --- BOTTOM NAVIGATION --- */}
         <div className="mt-8 space-y-6">
-          {/* View Switcher: Calendar / List */}
           <div className="flex justify-center">
             <div className="flex items-center bg-gray-100 rounded-xl sm:rounded-2xl p-1 shadow-inner border border-gray-200">
               <button 
@@ -344,25 +359,45 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {/* Legend / Labels: Centered with unified colors */}
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 p-6 bg-white rounded-xl sm:rounded-[2.5rem] border-2 border-gray-50 shadow-md relative overflow-hidden max-w-4xl mx-auto w-full">
-            <div className="absolute top-0 left-0 w-full h-1 bg-yellow-400"></div>
-            
-            <div className="flex items-center gap-2.5 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
-              <FullDayIcon size={18} />
-              <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Full Day</span>
+          {/* Dismissible Legend / Labels */}
+          {showLegend ? (
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 flex flex-wrap items-center justify-center gap-4 sm:gap-8 p-6 bg-white rounded-xl sm:rounded-[2.5rem] border-2 border-gray-50 shadow-md relative overflow-hidden max-w-4xl mx-auto w-full group/legend">
+              <div className="absolute top-0 left-0 w-full h-1 bg-yellow-400"></div>
+              
+              <button 
+                onClick={toggleLegend}
+                className="absolute top-2 right-2 p-1.5 text-gray-300 hover:text-red-400 hover:bg-red-50 rounded-full transition-all"
+                title="Dismiss Legend"
+              >
+                <X size={14} strokeWidth={3} />
+              </button>
+
+              <div className="flex items-center gap-2.5 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
+                <FullDayIcon size={20} />
+                <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Full Day</span>
+              </div>
+              
+              <div className="flex items-center gap-2.5 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
+                <HalfDayMorningIcon size={20} />
+                <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Morning</span>
+              </div>
+              
+              <div className="flex items-center gap-2.5 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
+                <HalfDayEveningIcon size={20} />
+                <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Evening</span>
+              </div>
             </div>
-            
-            <div className="flex items-center gap-2.5 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
-              <HalfDayMorningIcon size={18} />
-              <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Morning</span>
+          ) : (
+            <div className="flex justify-center">
+              <button 
+                onClick={toggleLegend}
+                className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-gray-100 shadow-sm text-gray-400 hover:text-yellow-600 transition-all active:scale-95"
+              >
+                <Info size={14} />
+                <span className="text-[9px] font-black uppercase tracking-widest">Show Help</span>
+              </button>
             </div>
-            
-            <div className="flex items-center gap-2.5 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
-              <HalfDayEveningIcon size={18} />
-              <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Evening</span>
-            </div>
-          </div>
+          )}
         </div>
       </main>
 
