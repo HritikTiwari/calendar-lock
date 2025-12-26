@@ -67,20 +67,11 @@ const App: React.FC = () => {
         },
         {
           id: generateId(),
-          date: addDays(today, -5).toISOString(),
-          name: "Engagement: Amit & Sneha",
-          dayType: DayType.HALF_DAY_EVENING,
+          date: today.toISOString(),
+          name: "Reception: Malhotra Family",
+          dayType: DayType.FULL_DAY,
           locationType: LocationType.LOCAL,
-          notes: "Single shooter",
-          createdAt: Date.now()
-        },
-        {
-          id: generateId(),
-          date: addDays(today, -2).toISOString(),
-          name: "Maternity Shoot: Dr. Kapoor",
-          dayType: DayType.HALF_DAY_MORNING,
-          locationType: LocationType.LOCAL,
-          notes: "Studio session",
+          notes: "2nd shooter required",
           createdAt: Date.now()
         },
         {
@@ -90,6 +81,33 @@ const App: React.FC = () => {
           dayType: DayType.FULL_DAY,
           locationType: LocationType.OUT_OF_CITY,
           notes: "Candid + Cinematic Team",
+          createdAt: Date.now()
+        },
+        {
+          id: generateId(),
+          date: addDays(today, 2).toISOString(),
+          name: "Couple Shoot: Rahul & Tina",
+          dayType: DayType.HALF_DAY_MORNING,
+          locationType: LocationType.LOCAL,
+          notes: "Beach session",
+          createdAt: Date.now()
+        },
+        {
+          id: generateId(),
+          date: addDays(today, 2).toISOString(),
+          name: "Dinner Event: Corporate",
+          dayType: DayType.HALF_DAY_EVENING,
+          locationType: LocationType.LOCAL,
+          notes: "Wait for client signal",
+          createdAt: Date.now()
+        },
+        {
+          id: generateId(),
+          date: addDays(today, -5).toISOString(),
+          name: "Engagement: Amit & Sneha",
+          dayType: DayType.HALF_DAY_EVENING,
+          locationType: LocationType.LOCAL,
+          notes: "Single shooter",
           createdAt: Date.now()
         },
         {
@@ -142,17 +160,29 @@ const App: React.FC = () => {
     setIsSheetOpen(true);
   };
 
-  const filteredEvents = events.filter(e => {
-    const eDate = new Date(e.date);
-    eDate.setHours(0, 0, 0, 0);
+  const getFilteredEvents = () => {
     const tDate = new Date();
     tDate.setHours(0, 0, 0, 0);
+
+    const past = events.filter(e => isBefore(new Date(e.date), tDate));
+    const today = events.filter(e => {
+      const d = new Date(e.date);
+      d.setHours(0, 0, 0, 0);
+      return d.getTime() === tDate.getTime();
+    });
+    const upcoming = events.filter(e => isAfter(new Date(e.date), tDate));
+
+    if (listFilter === 'PAST') return past.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    if (listFilter === 'TODAY') {
+      if (today.length === 0) return upcoming.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      return today.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }
+    if (listFilter === 'UPCOMING') return upcoming.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     
-    if (listFilter === 'PAST') return isBefore(eDate, tDate);
-    if (listFilter === 'TODAY') return eDate.getTime() === tDate.getTime();
-    if (listFilter === 'UPCOMING') return isAfter(eDate, tDate);
-    return true;
-  }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    return events;
+  };
+
+  const filteredEvents = getFilteredEvents();
 
   const getDayTypeLabel = (type: DayType) => {
     switch (type) {
@@ -165,7 +195,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] flex flex-col pb-24 font-sans">
-      {/* Refined Header */}
+      {/* Header */}
       <header className="bg-white border-b px-3 sm:px-6 py-3 sm:py-5 sticky top-0 z-30 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="bg-yellow-400 text-black p-1.5 sm:p-2.5 rounded-lg sm:rounded-2xl shadow-md rotate-[-3deg]">
@@ -177,19 +207,22 @@ const App: React.FC = () => {
           </div>
         </div>
         
-        <div className="flex items-center bg-gray-100 rounded-lg sm:rounded-2xl p-0.5 sm:p-1 shadow-inner">
-          <button onClick={() => setCurrentDate(addMonths(currentDate, -1))} className="p-1 sm:p-2 hover:bg-white rounded-md sm:rounded-xl active:scale-90 transition-all"><ChevronLeft size={12} className="sm:w-4 sm:h-4" strokeWidth={3} /></button>
-          <span className="px-1 sm:px-3 font-black text-[9px] sm:text-sm min-w-[60px] sm:min-w-[110px] text-center text-gray-800 uppercase tracking-tighter">
-            {format(currentDate, 'MMM yy')}
-          </span>
-          <button onClick={() => setCurrentDate(addMonths(currentDate, 1))} className="p-1 sm:p-2 hover:bg-white rounded-md sm:rounded-xl active:scale-90 transition-all"><ChevronRight size={12} className="sm:w-4 sm:h-4" strokeWidth={3} /></button>
-        </div>
+        {/* Hid month navigation if List View is selected */}
+        {viewMode === 'CALENDAR' && (
+          <div className="flex items-center bg-gray-100 rounded-lg sm:rounded-2xl p-0.5 sm:p-1 shadow-inner animate-in fade-in duration-200">
+            <button onClick={() => setCurrentDate(addMonths(currentDate, -1))} className="p-1 sm:p-2 hover:bg-white rounded-md sm:rounded-xl active:scale-90 transition-all"><ChevronLeft size={12} className="sm:w-4 sm:h-4" strokeWidth={3} /></button>
+            <span className="px-1 sm:px-3 font-black text-[9px] sm:text-sm min-w-[60px] sm:min-w-[110px] text-center text-gray-800 uppercase tracking-tighter">
+              {format(currentDate, 'MMM yy')}
+            </span>
+            <button onClick={() => setCurrentDate(addMonths(currentDate, 1))} className="p-1 sm:p-2 hover:bg-white rounded-md sm:rounded-xl active:scale-90 transition-all"><ChevronRight size={12} className="sm:w-4 sm:h-4" strokeWidth={3} /></button>
+          </div>
+        )}
       </header>
 
       <main className="flex-1 p-3 sm:p-8 max-w-7xl mx-auto w-full overflow-x-hidden flex flex-col">
         
         {viewMode === 'LIST' && (
-          <div className="flex justify-center mb-6 sm:mb-10">
+          <div className="flex justify-center mb-6 sm:mb-10 animate-in slide-in-from-top-4 duration-300">
             <div className="bg-white p-1 rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 flex items-center w-full sm:w-auto overflow-hidden">
               {['PAST', 'TODAY', 'UPCOMING'].map((filter) => (
                 <button
@@ -256,16 +289,16 @@ const App: React.FC = () => {
                       {Object.entries(typeCounts).map(([type, count]) => {
                         if (count === 0) return null;
                         return (
-                          <div key={type} className="flex items-center gap-1 bg-gray-50/80 sm:bg-transparent rounded px-0.5 py-0.5 sm:p-0">
-                            {/* Bolder Icons in Grid - Increased from 14 to 20/24 */}
+                          <div key={type} className="flex items-center gap-1.5 bg-gray-50/80 sm:bg-transparent rounded-lg px-1 py-0.5 sm:p-0">
                             <div className="scale-[0.7] sm:scale-100 origin-left">
                               {type === DayType.FULL_DAY && <FullDayIcon isPast={isPast} size={22} />}
                               {type === DayType.HALF_DAY_MORNING && <HalfDayMorningIcon isPast={isPast} size={22} />}
                               {type === DayType.HALF_DAY_EVENING && <HalfDayEveningIcon isPast={isPast} size={22} />}
                             </div>
+                            {/* Showing actual count (2, 3...) instead of +1 prefix */}
                             {count > 1 && (
-                              <span className={`text-[7px] sm:text-[11px] font-black ${isPast ? 'text-gray-400' : 'text-yellow-600'}`}>
-                                +{count - 1}
+                              <span className={`text-[8px] sm:text-[12px] font-black ${isPast ? 'text-gray-400' : 'text-yellow-600'}`}>
+                                {count}
                               </span>
                             )}
                           </div>
@@ -283,6 +316,18 @@ const App: React.FC = () => {
           </>
         ) : (
           <div className="max-w-3xl mx-auto space-y-3 sm:space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 w-full flex-1">
+            {listFilter === 'TODAY' && events.filter(e => {
+              const d = new Date(e.date);
+              d.setHours(0, 0, 0, 0);
+              const now = new Date();
+              now.setHours(0, 0, 0, 0);
+              return d.getTime() === now.getTime();
+            }).length === 0 && filteredEvents.length > 0 && (
+              <div className="bg-yellow-100 text-yellow-800 p-3 rounded-2xl mb-4 text-[10px] font-black uppercase tracking-widest text-center border border-yellow-200 shadow-sm">
+                No events for today. Showing upcoming engagements
+              </div>
+            )}
+            
             {filteredEvents.length === 0 ? (
               <div className="text-center py-16 sm:py-24 bg-white rounded-2xl sm:rounded-[2rem] border-2 border-dashed border-gray-100 px-4">
                 <div className="bg-gray-50 w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -330,7 +375,7 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* --- BOTTOM NAVIGATION --- */}
+        {/* BOTTOM NAVIGATION */}
         <div className="mt-8 space-y-6">
           <div className="flex justify-center">
             <div className="flex items-center bg-gray-100 rounded-xl sm:rounded-2xl p-1 shadow-inner border border-gray-200">
@@ -359,7 +404,6 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {/* Dismissible Legend / Labels */}
           {showLegend ? (
             <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 flex flex-wrap items-center justify-center gap-4 sm:gap-8 p-6 bg-white rounded-xl sm:rounded-[2.5rem] border-2 border-gray-50 shadow-md relative overflow-hidden max-w-4xl mx-auto w-full group/legend">
               <div className="absolute top-0 left-0 w-full h-1 bg-yellow-400"></div>
@@ -374,17 +418,17 @@ const App: React.FC = () => {
 
               <div className="flex items-center gap-2.5 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
                 <FullDayIcon size={20} />
-                <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Full Day</span>
+                <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Full Day (Day & Night)</span>
               </div>
               
               <div className="flex items-center gap-2.5 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
                 <HalfDayMorningIcon size={20} />
-                <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Morning</span>
+                <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Half Day (Morning)</span>
               </div>
               
               <div className="flex items-center gap-2.5 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
                 <HalfDayEveningIcon size={20} />
-                <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Evening</span>
+                <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Half Day (Evening)</span>
               </div>
             </div>
           ) : (
@@ -394,7 +438,7 @@ const App: React.FC = () => {
                 className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-gray-100 shadow-sm text-gray-400 hover:text-yellow-600 transition-all active:scale-95"
               >
                 <Info size={14} />
-                <span className="text-[9px] font-black uppercase tracking-widest">Show Help</span>
+                <span className="text-[9px] font-black uppercase tracking-widest">Show Help Labels</span>
               </button>
             </div>
           )}
